@@ -4,6 +4,7 @@ CXX			=	c++
 CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98 -pedantic -Wconversion -Iinclude -g
 
 SRC			= src/main.cpp\
+				src/BitcoinExchange.cpp\
 
 OBJ			=	$(SRC:.cpp=.o)
 

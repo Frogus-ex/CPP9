@@ -10,8 +10,14 @@
 class Bitcoin
 {
 private:
-  static std::map<std::string, float> _database;
-
+  std::map<std::string, float> _database;
+  void addToCont (const char *filename);
+  void calculateBitcoinValue (const char *filename);
+  bool validValue (const std::string &value);
+  bool validDate (const std::string &date);
+  int getDaysInMonth (int month, int year);
+  bool isLeapYear (int year);
+  void printContent ();
 public:
   Bitcoin () {}
   ~Bitcoin () {}
@@ -25,16 +31,19 @@ public:
       }
     return (*this);
   }
-  static std::map<std::string, float> &
-  getDates ()
+
+  class BitcoinError : public std::exception
   {
-    return (_database);
-  }
-  static void addToCont (const char *filename);
-  static void calculateBitcoinValue (const char *filename);
-  static bool validValue (std::string value);
-  static bool validDate (std::string date);
-  static int getDaysInMonth(int month, int year);
-  static bool isLeapYear (int year);
-  static void printContent ();
+  private:
+    const char *_message;
+  public:
+    BitcoinError (const char *message) : _message (message) {}
+    virtual const char *
+    what () const throw ()
+    {
+      return (_message);
+    }
+    virtual ~BitcoinError () throw () {}
+  };
+  void run (const char *databaseFile, const char *inputFile);
 };

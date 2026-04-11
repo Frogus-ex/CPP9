@@ -1,7 +1,5 @@
 #include "BitcoinExchange.hpp"
 
-std::map<std::string, float> Bitcoin::_database;
-
 bool
 Bitcoin::isLeapYear (int year)
 {
@@ -12,14 +10,14 @@ int
 Bitcoin::getDaysInMonth (int month, int year)
 {
   if (month == 2)
-    return (Bitcoin::isLeapYear (year) ? 29 : 28);
+    return (this->isLeapYear (year) ? 29 : 28);
   if (month == 4 || month == 6 || month == 9 || month == 11)
     return (30);
   return (31);
 }
 
 bool
-Bitcoin::validValue (std::string value)
+Bitcoin::validValue (const std::string &value)
 {
   float valVal = static_cast<float> (std::atof (value.c_str ()));
   if (valVal < 0)
@@ -36,11 +34,11 @@ Bitcoin::validValue (std::string value)
 }
 
 bool
-Bitcoin::validDate (std::string date)
+Bitcoin::validDate (const std::string &date)
 {
   if (date.length () != 10 || date[4] != '-' || date[7] != '-')
     {
-      std::cout << "Error: wrong date format.\n";
+      std::cerr << "Error: wrong date format.\n";
       return (false);
     }
   for (size_t n = 0; n < 10; n++)
@@ -49,7 +47,7 @@ Bitcoin::validDate (std::string date)
         continue;
       if (!std::isdigit (static_cast<unsigned char> (date[n])))
         {
-          std::cout << "Error: wrong date format.\n";
+          std::cerr << "Error: wrong date format.\n";
           return (false);
         }
     }
@@ -58,17 +56,17 @@ Bitcoin::validDate (std::string date)
   int day = std::atoi (date.substr (8, 2).c_str ());
   if (year > 2026 || year < 0)
     {
-      std::cout << "Error: this month doesn t exist\n";
+      std::cerr << "Error: this month doesn t exist\n";
       return (false);
     }
   if (month > 12 || month < 1)
     {
-      std::cout << "Error: this month doesn t exist\n";
+      std::cerr << "Error: this month doesn t exist\n";
       return (false);
     }
-  if (day > Bitcoin::getDaysInMonth (month, year) || day < 1)
+  if (day > this->getDaysInMonth (month, year) || day < 1)
     {
-      std::cout << "Error: this day doesn t exist\n";
+      std::cerr << "Error: this day doesn t exist\n";
       return (false);
     }
   return (true);
@@ -81,8 +79,7 @@ Bitcoin::addToCont (const char *filename)
 
   if (!file.is_open ())
     {
-      std::cerr << "Error: could not open file." << std::endl;
-      return;
+      throw Bitcoin::BitcoinError ("Error: could not open file.");
     }
 
   std::string line;
@@ -121,8 +118,7 @@ Bitcoin::calculateBitcoinValue (const char *filename)
 
   if (!file.is_open ())
     {
-      std::cerr << "Error: could not open file." << std::endl;
-      return;
+      throw Bitcoin::BitcoinError ("Error: could not open file.");
     }
 
   std::string line;
@@ -138,7 +134,7 @@ Bitcoin::calculateBitcoinValue (const char *filename)
         }
       if (line.find ("|") == line.npos)
         {
-          std::cout << "Error: bad input => " << line << std::endl;
+          std::cerr << "Error: bad input => " << line << std::endl;
           continue;
         }
 
@@ -154,8 +150,8 @@ Bitcoin::calculateBitcoinValue (const char *filename)
       end = value.find_last_not_of (" \t");
       if (start != std::string::npos)
         value = value.substr (start, end - start + 1);
-      if (Bitcoin::validDate (date) == true
-          && Bitcoin::validValue (value) == true)
+      if (Bitcoin::validDate (date)
+          && Bitcoin::validValue (value))
         {
           std::map<std::string, float>::iterator it
               = _database.lower_bound (date);
@@ -182,10 +178,10 @@ Bitcoin::calculateBitcoinValue (const char *filename)
                             << std::endl;
                 }
               else
-                std::cout << "Error: date too old for the database\n";
+                std::cerr << "Error: date too old for the database\n";
             }
           else if (it == _database.end ())
-            std::cout << "Error: date too recent for the database\n";
+            std::cerr << "Error: date too recent for the database\n";
         }
     }
 }
@@ -199,4 +195,11 @@ Bitcoin::printContent ()
       std::cout << it->first << " => " << it->second << std::endl;
       ++it;
     }
+}
+
+void
+Bitcoin::run (const char *databaseFile, const char *inputFile)
+{
+  this->addToCont (databaseFile);
+  this->calculateBitcoinValue (inputFile);
 }

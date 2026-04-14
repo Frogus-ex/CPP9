@@ -3,14 +3,14 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <map>
+#include <list>
 #include <sstream>
 #include <string>
 
 class Bitcoin
 {
 private:
-  std::map<std::string, float> _database;
+  std::list<std::pair<std::string, float> > _database;
   void addToCont (const char *filename);
   void calculateBitcoinValue (const char *filename);
   bool validValue (const std::string &value);
@@ -18,6 +18,7 @@ private:
   int getDaysInMonth (int month, int year);
   bool isLeapYear (int year);
   void printContent ();
+
 public:
   Bitcoin () {}
   ~Bitcoin () {}
@@ -36,6 +37,7 @@ public:
   {
   private:
     const char *_message;
+
   public:
     BitcoinError (const char *message) : _message (message) {}
     virtual const char *

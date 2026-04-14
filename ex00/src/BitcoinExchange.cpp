@@ -19,6 +19,28 @@ Bitcoin::getDaysInMonth (int month, int year)
 bool
 Bitcoin::validValue (const std::string &value)
 {
+  if (value.empty ())
+    {
+      std::cerr << "Error: bad input => " << value << std::endl;
+      return (false);
+    }
+
+  bool hasDigit = false;
+  for (size_t i = 0; i < value.length (); i++)
+    {
+      if (std::isdigit (static_cast<unsigned char> (value[i])))
+        hasDigit = true;
+      else if (value[i] != '.')
+        {
+          std::cerr << "Error: bad input => " << value << std::endl;
+          return (false);
+        }
+    }
+    if (!hasDigit)
+    {
+      std::cerr << "Error: bad input => " << value << std::endl;
+      return (false);
+    }
   float valVal = static_cast<float> (std::atof (value.c_str ()));
   if (valVal < 0)
     {
@@ -56,7 +78,8 @@ Bitcoin::validDate (const std::string &date)
   int day = std::atoi (date.substr (8, 2).c_str ());
   if (year > 2026 || year < 0)
     {
-      std::cerr << "Error: this month doesn t exist\n";
+      std::cerr << "Error: this year will exist in the future but is not "
+                   "relevant for now\n";
       return (false);
     }
   if (month > 12 || month < 1)
@@ -81,7 +104,6 @@ Bitcoin::addToCont (const char *filename)
     {
       throw Bitcoin::BitcoinError ("Error: could not open file.");
     }
-
   std::string line;
   bool firstLine = true;
 
@@ -92,22 +114,16 @@ Bitcoin::addToCont (const char *filename)
           firstLine = false;
           continue;
         }
-
       if (line.empty ())
         continue;
-
       std::stringstream ss (line);
       std::string date, priceStr;
 
       if (!std::getline (ss, date, ',') || !std::getline (ss, priceStr))
-        {
-          continue;
-        }
-
+        continue;
       float price = static_cast<float> (std::atof (priceStr.c_str ()));
-      _database[date] = price;
+      _database.push_back (std::make_pair (date, price));
     }
-
   file.close ();
 }
 
@@ -150,38 +166,47 @@ Bitcoin::calculateBitcoinValue (const char *filename)
       end = value.find_last_not_of (" \t");
       if (start != std::string::npos)
         value = value.substr (start, end - start + 1);
-      if (Bitcoin::validDate (date)
-          && Bitcoin::validValue (value))
+      if (Bitcoin::validDate (date) && Bitcoin::validValue (value))
         {
-          std::map<std::string, float>::iterator it
-              = _database.lower_bound (date);
+          std::list<std::pair<std::string, float> >::iterator it
+              = _database.begin ();
+          std::list<std::pair<std::string, float> >::iterator found
+              = _database.end ();
+          std::list<std::pair<std::string, float> >::iterator closest
+              = _database.end ();
+          // Find exact date or closest date before it
+          while (it != _database.end ())
+            {
+              if (it->first == date)
+                {
+                  found = it;
+                  break;
+                }
+              if (it->first < date)
+                closest = it;
+              ++it;
+            }
           // verification si la date exact est dispo dans la base de donnee
-          if (it != _database.end () && it->first == date)
+          if (found != _database.end ())
             {
               float btcQuantity
                   = static_cast<float> (std::atof (value.c_str ()));
-              float result = it->second * btcQuantity;
+              float result = found->second * btcQuantity;
               std::cout << date << " => " << value << " = " << result
                         << std::endl;
             }
-          // verification pour trouver la date a plus proche arrondie a l
+          // verification pour trouver la date la plus proche arrondie a l
           // inferieur
-          else if (it != _database.end () && it->first != date)
+          else if (closest != _database.end ())
             {
-              if (it != _database.begin ())
-                {
-                  --it;
-                  float btcQuantity
-                      = static_cast<float> (std::atof (value.c_str ()));
-                  float result = it->second * btcQuantity;
-                  std::cout << date << " => " << value << " = " << result
-                            << std::endl;
-                }
-              else
-                std::cerr << "Error: date too old for the database\n";
+              float btcQuantity
+                  = static_cast<float> (std::atof (value.c_str ()));
+              float result = closest->second * btcQuantity;
+              std::cout << date << " => " << value << " = " << result
+                        << std::endl;
             }
-          else if (it == _database.end ())
-            std::cerr << "Error: date too recent for the database\n";
+          else
+            std::cerr << "Error: date too old for the database\n";
         }
     }
 }
@@ -189,7 +214,7 @@ Bitcoin::calculateBitcoinValue (const char *filename)
 void
 Bitcoin::printContent ()
 {
-  std::map<std::string, float>::iterator it = _database.begin ();
+  std::list<std::pair<std::string, float> >::iterator it = _database.begin ();
   while (it != _database.end ())
     {
       std::cout << it->first << " => " << it->second << std::endl;

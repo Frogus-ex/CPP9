@@ -15,7 +15,7 @@ main (int ac, char **av)
     }
   catch (std::exception &e)
     {
-      std::cerr << e.what() << std::endl;
+      std::cerr << e.what () << std::endl;
       return (1);
     }
   return (0);

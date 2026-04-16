@@ -3,14 +3,14 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <list>
+#include <map>
 #include <sstream>
 #include <string>
 
 class Bitcoin
 {
 private:
-  std::list<std::pair<std::string, float> > _database;
+  std::map<std::string, float> _database;
   void addToCont (const char *filename);
   void calculateBitcoinValue (const char *filename);
   bool validValue (const std::string &value);

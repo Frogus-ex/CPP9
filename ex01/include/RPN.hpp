@@ -1,14 +1,14 @@
 #pragma once
 
 #include <iostream>
-#include <stack>
+#include <list>
 #include <string>
 
 class RPN
 {
 
 private:
-  std::stack<int> _rpnStack;
+  std::list<int> _rpnStack;
 
 public:
   RPN () {}

@@ -153,15 +153,15 @@ Bitcoin::calculateBitcoinValue (const char *filename)
           std::cerr << "Error: bad input => " << line << std::endl;
           continue;
         }
-
+      //setup des element date et value
       date = line.substr (0, line.find ("|") - 1);
       value = line.substr (line.find ("|") + 1);
-
+      //trim de date
       size_t start = date.find_first_not_of (" \t");
       size_t end = date.find_last_not_of (" \t");
       if (start != std::string::npos)
         date = date.substr (start, end - start + 1);
-
+      //trim de value
       start = value.find_first_not_of (" \t");
       end = value.find_last_not_of (" \t");
       if (start != std::string::npos)

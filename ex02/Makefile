@@ -4,7 +4,7 @@ CXX			=	c++
 CXXFLAGS	=	-Wall -Wextra -Werror -std=c++98 -pedantic -Wconversion -Iinclude -g
 
 SRC			= src/main.cpp\
-				src/RPN.cpp\
+				src/PmergeMe.cpp\
 
 OBJ			=	$(SRC:.cpp=.o)
 

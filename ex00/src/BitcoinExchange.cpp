@@ -168,8 +168,7 @@ Bitcoin::calculateBitcoinValue (const char *filename)
         value = value.substr (start, end - start + 1);
       if (Bitcoin::validDate (date) && Bitcoin::validValue (value))
         {
-          auto it = _database.lower_bound (date);
-
+          std::map<std::string, float>::iterator it = _database.lower_bound (date);
           // Cas 1 : date exacte trouvée
           if (it != _database.end () && it->first == date)
             {

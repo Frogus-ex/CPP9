@@ -3,12 +3,13 @@
 #include <iostream>
 #include <list>
 #include <string>
+#include <limits>
 
 class RPN
 {
 
 private:
-  std::list<int> _rpnStack;
+  std::list<int> _rpnList;
 
 public:
   RPN () {}
@@ -18,7 +19,7 @@ public:
   operator= (const RPN &other)
   {
     if (this != &other)
-      this->_rpnStack = other._rpnStack;
+      this->_rpnList = other._rpnList;
     return (*this);
   }
   void rpnCalculation (std::string av);

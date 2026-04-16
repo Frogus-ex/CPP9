@@ -11,13 +11,14 @@
 class PmergeMe {
     private:
         std::vector<int> _main;
-        std::deque<int> _pend;
+        std::deque<int> _sort;
         std::vector<std::pair<int, int> > _paires;
+
     public:
     int addToCont(const char *av);
     void printContent();
     void makePairs();
-
+    void sortMaxElements();
     class PmergeError : public std::exception
   {
   private:

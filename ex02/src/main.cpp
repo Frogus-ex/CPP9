@@ -13,6 +13,7 @@ main (int ac, char **av)
   for (int i = 1; i < ac; i++)
     if (coco.addToCont (av[i]) == 1)
       return 1;
+  coco.makePairs();
   coco.printContent ();
   return (0);
 }

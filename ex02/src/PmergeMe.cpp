@@ -1,69 +1,68 @@
 #include "PmergeMe.hpp"
 
-int
-PmergeMe::addToCont (const char *av)
+bool
+isValidArg (char *av)
 {
-  int i = 0;
-  while (av[i])
+  if (!av || !av[0])
+    return (false);
+  for (int i = 0; av[i]; i++)
     {
       if (!std::isdigit (av[i]))
-        {
-          std::cout << "Error: wrong arg not a number\n";
-          return (1);
-        }
-      i++;
+        return (false);
     }
-  _main.push_back (std::atoi (av));
-  return (0);
+  return (true);
 }
 
 void
-PmergeMe::makePairs ()
+PmergeMe::makePairs (char **av)
 {
-  std::vector<int>::iterator it = _main.begin ();
-  while (it != _main.end ())
+  int i;
+  for (i = 1; av[i + 1] && isValidArg (av[i]) && isValidArg (av[i + 1]);
+       i += 2)
     {
-      if (it + 1 != _main.end ())
-        {
-          int a = *it;
-          int b = *(it + 1);
-          if (a <= b)
-            _paires.push_back (std::make_pair (a, b));
-          else
-            _paires.push_back (std::make_pair (b, a));
-          it += 2;
-        }
+      int a = std::atoi (av[i]);
+      int b = std::atoi (av[i + 1]);
+      if (a < b)
+        _paires.push_back (std::make_pair (a, b));
       else
-        {
-          _paires.push_back (std::make_pair (*it, -1));
-          it++;
-        }
+        _paires.push_back (std::make_pair (b, a));
+    }
+  if (i % 2 != 0 && av[i] && isValidArg (av[i]))
+    {
+      int unpaired = std::atoi (av[i]);
+      _paires.push_back (std::make_pair (unpaired, -1));
     }
 }
 
-void  PmergeMe::sortMaxElements()
+void
+PmergeMe::addMaxtoMain ()
 {
-  std::vector<std::pair<int, int> >::iterator it = _paires.begin();
-  int first;
-  int second;
-  int tmp;
-  for (; it != _paires.end(); it += 2)
-  {
-    if (it + 1 != _paires.end())
+  std::vector<std::pair<int, int>>::iterator it = _paires.begin ();
+  while (it->second)
     {
-      it->second = first;
+      _main.push_back (it->second);
       it++;
-      it->second = second;
-      if (first > second)
-      {
-        it->second = first;
-        it--;
-        it->second = second;
-      }
-      else
-        it += 2;
     }
-  }
+}
+
+void
+PmergeMe::addMintoPend ()
+{
+  std::vector<std::pair<int, int>>::iterator it = _paires.begin ();
+  while (it->second)
+    {
+      _pend.push_back (it->second);
+      it++;
+    }
+}
+
+void
+PmergeMe::mergeSort ()
+{
+  if (_main.size () == 0)
+    return;
+  if (_main.size () <= 1)
+    return;
 }
 
 void
@@ -78,10 +77,11 @@ PmergeMe::printContent ()
     }
   std::cout << std::endl;
   std::cout << "Paires:" << std::endl;
-  std::vector<std::pair<int, int> >::iterator pit = _paires.begin();
+  std::vector<std::pair<int, int>>::iterator pit = _paires.begin ();
   while (pit != _paires.end ())
     {
-      std::cout << "  (" << pit->first << ", " << pit->second << ")" << std::endl;
+      std::cout << "  (" << pit->first << ", " << pit->second << ")"
+                << std::endl;
       ++pit;
     }
 }

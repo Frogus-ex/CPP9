@@ -11,19 +11,20 @@
 class PmergeMe {
     private:
         std::vector<int> _main;
+        std::vector<int> _main;
         std::deque<int> _sort;
         std::vector<std::pair<int, int> > _paires;
 
     public:
-    int addToCont(const char *av);
     void printContent();
-    void makePairs();
-    void sortMaxElements();
+    void makePairs(char **av);
+    void addMaxtoMain();
+    void addMintoPend();
+    void mergeSort();
     class PmergeError : public std::exception
   {
   private:
     const char *_message;
-
   public:
     PmergeError (const char *message) : _message (message) {}
     virtual const char *

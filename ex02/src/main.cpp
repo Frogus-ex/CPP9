@@ -10,10 +10,10 @@ main (int ac, char **av)
       return (1);
     }
   PmergeMe coco;
-  for (int i = 1; i < ac; i++)
-    if (coco.addToCont (av[i]) == 1)
-      return 1;
-  coco.makePairs();
+  coco.makePairs (av);
+  coco.addMaxtoMain ();
+  coco.printContent ();
+  coco.recursion (1);
   coco.printContent ();
   return (0);
 }

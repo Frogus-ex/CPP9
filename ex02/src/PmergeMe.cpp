@@ -1,18 +1,15 @@
 #include "PmergeMe.hpp"
 #include <cerrno>
-#include <limits>
 #include <cstdlib>
+#include <limits>
 
 PmergeMe::PmergeMe ()
-  : _hasLoneWolf (false), _LoneWolf (0), _hasDequeLoneWolf (false),
-    _dequeLoneWolf (0)
+    : _hasLoneWolf (false), _LoneWolf (0), _hasDequeLoneWolf (false),
+      _dequeLoneWolf (0)
 {
 }
 
-PmergeMe::PmergeMe (const PmergeMe &other)
-{
-  *this = other;
-}
+PmergeMe::PmergeMe (const PmergeMe &other) { *this = other; }
 
 PmergeMe &
 PmergeMe::operator= (const PmergeMe &other)
@@ -31,9 +28,7 @@ PmergeMe::operator= (const PmergeMe &other)
   return (*this);
 }
 
-PmergeMe::~PmergeMe ()
-{
-}
+PmergeMe::~PmergeMe () {}
 
 static bool
 parsePositiveInt (const char *arg, int &value)
@@ -52,17 +47,17 @@ parsePositiveInt (const char *arg, int &value)
   long parsed = std::strtol (arg, &endptr, 10);
 
   if (errno == ERANGE || *endptr != '\0' || parsed <= 0
-      || parsed > std::numeric_limits<int>::max()) 
+      || parsed > std::numeric_limits<int>::max ())
     return (false);
 
   value = static_cast<int> (parsed);
   return (true);
 }
 
-
-//premiere etape de l exercice qui cree des paires de 2 et les pretrie une premiere fois avec le min et le max
-//pour pouvoir ensuite faire notre merge sort sur les max uniquement.
-//je garde pour les min leurs partenaire max pour l insertion plus tard tkt (larmes abondantes)
+// premiere etape de l exercice qui cree des paires de 2 et les pretrie une
+// premiere fois avec le min et le max pour pouvoir ensuite faire notre merge
+// sort sur les max uniquement. je garde pour les min leurs partenaire max pour
+// l insertion plus tard tkt (larmes abondantes)
 
 void
 PmergeMe::makePairs (char **av)
@@ -99,11 +94,13 @@ PmergeMe::makePairs (char **av)
     }
 }
 
-//premiere etape du merge insertion sort :
-//1- Ajout de mes elements de main dans mon left et right scinde par mid qui est le juste milieu des elements
-//2- reinsertion dans main en trian les elements "si l1 <= r1 alors _main = l1 sinon r1 et ++ sur l ou r"
-//3- parcours tout les elements restant soit dans l1 soit r1 pour venir les placer a la fin du main comme
-//que dans l ou r les elements restant ils seront deja trier.
+// premiere etape du merge insertion sort :
+// 1- Ajout de mes elements de main dans mon left et right scinde par mid qui
+// est le juste milieu des elements 2- reinsertion dans main en trian les
+// elements "si l1 <= r1 alors _main = l1 sinon r1 et ++ sur l ou r" 3-
+// parcours tout les elements restant soit dans l1 soit r1 pour venir les
+// placer a la fin du main comme que dans l ou r les elements restant ils
+// seront deja trier.
 
 void
 PmergeMe::merge (size_t left, size_t mid, size_t right)
@@ -151,9 +148,9 @@ PmergeMe::merge (size_t left, size_t mid, size_t right)
     }
 }
 
-//recursion sur le merge afin de trier bien scinder l entiereter des element en
-//elements individuel reintroduit dans main en checkant left et right seulement les triant 
-//et passe a l element suivant
+// recursion sur le merge afin de trier bien scinder l entiereter des element
+// en elements individuel reintroduit dans main en checkant left et right
+// seulement les triant et passe a l element suivant
 
 void
 PmergeMe::mergeSort (size_t left, size_t right)
@@ -167,34 +164,37 @@ PmergeMe::mergeSort (size_t left, size_t right)
   merge (left, mid, right);
 }
 
-//genere la suite du jacob donc on a nos constant premier index 0 et 1 puis ensuite on vient
-//appliquer la formule et push l element puis on avance au next element pour le set selon la formule
-//et on s arrete quand le dernier element de la suite est <= a la taille de pend
+// genere la suite du jacob donc on a nos constant premier index 0 et 1 puis
+// ensuite on vient appliquer la formule et push l element puis on avance au
+// next element pour le set selon la formule et on s arrete quand le dernier
+// element de la suite est <= a la taille de pend
 
 std::vector<int>
-PmergeMe::generateJacobsthal(int size)
+PmergeMe::generateJacobsthal (int size)
 {
   std::vector<int> result;
   if (size <= 0)
     return (result);
   int previous = 0, current = 1, next = 0;
-  while (current <= size) {
-    result.push_back(current);
-    next = current + (2 * previous);
-    previous = current;
-    current = next;
-  }  
+  while (current <= size)
+    {
+      result.push_back (current);
+      next = current + (2 * previous);
+      previous = current;
+      current = next;
+    }
   return (result);
 }
 
-//on utilise notre suite de jacob pour cree le reel ordre d insertion de notre pend
-//on check d abord que notre pend ne soit pas vide ou ne contient pas qu un element
-//puis on parcours notre suite de jacob jusqu a sa fin et on vient insere du plus grand
-//au plus petit dans notre vector order qui definira le reel ordre d insertion qui suis
-//minutieusement la logique de ford
-//tant que current est superieur a previous alors current decremente pour ajouter tout les
-//les element du plus grand au plus petit. puis si il reste des elements ou reboucle sur tout
-//ceux ci pour les ajouter a l ordre toujours du plus grand ou plus petit.
+// on utilise notre suite de jacob pour cree le reel ordre d insertion de notre
+// pend on check d abord que notre pend ne soit pas vide ou ne contient pas qu
+// un element puis on parcours notre suite de jacob jusqu a sa fin et on vient
+// insere du plus grand au plus petit dans notre vector order qui definira le
+// reel ordre d insertion qui suis minutieusement la logique de ford tant que
+// current est superieur a previous alors current decremente pour ajouter tout
+// les les element du plus grand au plus petit. puis si il reste des elements
+// ou reboucle sur tout ceux ci pour les ajouter a l ordre toujours du plus
+// grand ou plus petit.
 
 static std::vector<size_t>
 buildInsertionOrder (size_t pendCount, const std::vector<int> &jacobsthal)
@@ -223,8 +223,8 @@ buildInsertionOrder (size_t pendCount, const std::vector<int> &jacobsthal)
   return (order);
 }
 
-//fonction qui porte bien son nom. elle cherche le partenaire de l element actuel
-//si l element partner
+// fonction qui porte bien son nom. elle cherche le partenaire de l element
+// actuel si l element partner
 
 static int
 findPartnerBoundVector (const std::vector<int> &chain, int partner)
@@ -238,9 +238,9 @@ findPartnerBoundVector (const std::vector<int> &chain, int partner)
   return (size);
 }
 
-//binary search regarde l element du milieu si c est plus grand que l element a insere
-//alors il degage tout les element de droite qui seront forcement plus grand et regarde au milieu de left
-//etc
+// binary search regarde l element du milieu si c est plus grand que l element
+// a insere alors il degage tout les element de droite qui seront forcement
+// plus grand et regarde au milieu de left etc
 
 int
 PmergeMe::binarySearch (int value, int rightExclusive)
@@ -251,7 +251,7 @@ PmergeMe::binarySearch (int value, int rightExclusive)
   while (left < right)
     {
       int mid = left + (right - left) / 2;
-      if (_main[static_cast<size_t>(mid)] < value)
+      if (_main[static_cast<size_t> (mid)] < value)
         left = mid + 1;
       else
         right = mid;
@@ -259,16 +259,17 @@ PmergeMe::binarySearch (int value, int rightExclusive)
   return (left);
 }
 
-//le fameux insertion sort qui vient insere les elements dans le main
-//en suivant l ordre de jacob qu on a defini precedemment
+// le fameux insertion sort qui vient insere les elements dans le main
+// en suivant l ordre de jacob qu on a defini precedemment
 
 void
-PmergeMe::insertionSort () //faire attention au paire partner la on oublie et on fait une logique de recherche du premier element plus grand que l element actuel
+PmergeMe::insertionSort ()
 {
   if (_pend.empty () && !_hasLoneWolf)
     return;
 
-  std::vector<int> jacobsthal = generateJacobsthal (static_cast<int>(_pend.size ()));
+  std::vector<int> jacobsthal
+      = generateJacobsthal (static_cast<int> (_pend.size ()));
 
   std::vector<size_t> order = buildInsertionOrder (_pend.size (), jacobsthal);
   for (size_t i = 0; i < order.size (); ++i)
@@ -296,7 +297,7 @@ PmergeMe::sort ()
     return;
 
   if (!_main.empty ())
-    mergeSort (0, static_cast<int> (_main.size ()) - 1);//ici passe tout au pire size_t
+    mergeSort (0, static_cast<int> (_main.size ()) - 1);
   insertionSort ();
 }
 
@@ -312,7 +313,7 @@ PmergeMe::printContent ()
   std::cout << std::endl;
 }
 /*********************************************************/
-//a partir de la c est pareil ma avec utilisation de deque*
+// a partir de la c est pareil ma avec utilisation de deque*
 /*********************************************************/
 
 void
@@ -325,23 +326,20 @@ PmergeMe::makePairsDeque (char **av)
   int i;
   for (i = 1; av[i] && av[i + 1]; i += 2)
     {
-      //std::pair<int, int> tmp
       int a;
       int b;
       if (!parsePositiveInt (av[i], a) || !parsePositiveInt (av[i + 1], b))
         throw PmergeError ("Error");
       if (a < b)
         {
-          //a = first, b = second
           _deque_pend.push_back (std::make_pair (a, b));
           _deque_main.push_back (b);
         }
       else
-        {//a = second et b = first de la std pair
+        {
           _deque_pend.push_back (std::make_pair (b, a));
           _deque_main.push_back (a);
         }
-        //la je pushback dans std::vector<std::pair<int, int> > vector.push_back(tmp)
     }
   if (av[i])
     {
@@ -352,7 +350,6 @@ PmergeMe::makePairsDeque (char **av)
       _dequeLoneWolf = unpaired;
     }
 }
-
 
 void
 PmergeMe::mergeDeque (size_t left, size_t mid, size_t right)
@@ -433,7 +430,7 @@ PmergeMe::binarySearchDeque (int value, int rightExclusive)
   while (left < right)
     {
       int mid = left + (right - left) / 2;
-      if (_deque_main[static_cast<size_t>(mid)] < value)
+      if (_deque_main[static_cast<size_t> (mid)] < value)
         left = mid + 1;
       else
         right = mid;
@@ -447,9 +444,11 @@ PmergeMe::insertionSortDeque ()
   if (_deque_pend.empty () && !_hasDequeLoneWolf)
     return;
 
-  std::vector<int> jacobsthal = generateJacobsthal (static_cast<int>(_deque_pend.size ()));
+  std::vector<int> jacobsthal
+      = generateJacobsthal (static_cast<int> (_deque_pend.size ()));
 
-  std::vector<size_t> order = buildInsertionOrder (_deque_pend.size (), jacobsthal);
+  std::vector<size_t> order
+      = buildInsertionOrder (_deque_pend.size (), jacobsthal);
   for (size_t i = 0; i < order.size (); ++i)
     {
       size_t idx = order[i];
@@ -457,7 +456,7 @@ PmergeMe::insertionSortDeque ()
       int partner = _deque_pend[idx].second;
       int rightExclusive = findPartnerBoundDeque (_deque_main, partner);
       int pos = binarySearchDeque (value, rightExclusive);
-      _deque_main.insert (_deque_main.begin () + pos, value);//attention dans le binary insertion => il me semble qu'il faut diminuer au fur et a mesure 
+      _deque_main.insert (_deque_main.begin () + pos, value);
     }
 
   if (_hasDequeLoneWolf)

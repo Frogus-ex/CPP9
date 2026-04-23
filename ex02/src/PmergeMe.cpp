@@ -1,11 +1,11 @@
 #include "PmergeMe.hpp"
 #include <cerrno>
-#include <climits>
+#include <limits>
 #include <cstdlib>
 
 PmergeMe::PmergeMe ()
-  : _hasStraggler (false), _straggler (0), _hasDequeStraggler (false),
-    _dequeStraggler (0)
+  : _hasLoneWolf (false), _LoneWolf (0), _hasDequeLoneWolf (false),
+    _dequeLoneWolf (0)
 {
 }
 
@@ -21,14 +21,12 @@ PmergeMe::operator= (const PmergeMe &other)
     {
       _main = other._main;
       _pend = other._pend;
-      _pendPartner = other._pendPartner;
-      _hasStraggler = other._hasStraggler;
-      _straggler = other._straggler;
+      _hasLoneWolf = other._hasLoneWolf;
+      _LoneWolf = other._LoneWolf;
       _deque_main = other._deque_main;
       _deque_pend = other._deque_pend;
-      _deque_pendPartner = other._deque_pendPartner;
-      _hasDequeStraggler = other._hasDequeStraggler;
-      _dequeStraggler = other._dequeStraggler;
+      _hasDequeLoneWolf = other._hasDequeLoneWolf;
+      _dequeLoneWolf = other._dequeLoneWolf;
     }
   return (*this);
 }
@@ -54,7 +52,7 @@ parsePositiveInt (const char *arg, int &value)
   long parsed = std::strtol (arg, &endptr, 10);
 
   if (errno == ERANGE || *endptr != '\0' || parsed <= 0
-      || parsed > static_cast<long> (INT_MAX))
+      || parsed > std::numeric_limits<int>::max()) 
     return (false);
 
   value = static_cast<int> (parsed);
@@ -71,8 +69,7 @@ PmergeMe::makePairs (char **av)
 {
   _main.clear ();
   _pend.clear ();
-  _pendPartner.clear ();
-  _hasStraggler = false;
+  _hasLoneWolf = false;
 
   int i;
   for (i = 1; av[i] && av[i + 1]; i += 2)
@@ -83,14 +80,12 @@ PmergeMe::makePairs (char **av)
         throw PmergeError ("Error");
       if (a < b)
         {
-          _pend.push_back (a);
-          _pendPartner.push_back (b);
+          _pend.push_back (std::make_pair (a, b));
           _main.push_back (b);
         }
       else
         {
-          _pend.push_back (b);
-          _pendPartner.push_back (a);
+          _pend.push_back (std::make_pair (b, a));
           _main.push_back (a);
         }
     }
@@ -99,8 +94,8 @@ PmergeMe::makePairs (char **av)
       int unpaired;
       if (!parsePositiveInt (av[i], unpaired))
         throw PmergeError ("Error");
-      _hasStraggler = true;
-      _straggler = unpaired;
+      _hasLoneWolf = true;
+      _LoneWolf = unpaired;
     }
 }
 
@@ -111,31 +106,31 @@ PmergeMe::makePairs (char **av)
 //que dans l ou r les elements restant ils seront deja trier.
 
 void
-PmergeMe::merge (int left, int mid, int right)
+PmergeMe::merge (size_t left, size_t mid, size_t right)
 {
-  int n1 = mid - left + 1;
-  int n2 = right - mid;
+  size_t n1 = mid - left + 1;
+  size_t n2 = right - mid;
 
-  std::vector<int> L (static_cast<size_t>(n1)), R (static_cast<size_t>(n2));
+  std::vector<int> L (n1), R (n2);
 
-  for (int i = 0; i < n1; i++)
-    L[static_cast<size_t>(i)] = _main[static_cast<size_t>(left + i)];
-  for (int j = 0; j < n2; j++)
-    R[static_cast<size_t>(j)] = _main[static_cast<size_t>(mid + 1 + j)];
+  for (size_t i = 0; i < n1; i++)
+    L[i] = _main[left + i];
+  for (size_t j = 0; j < n2; j++)
+    R[j] = _main[mid + 1 + j];
 
-  int i = 0, j = 0;
-  int k = left;
+  size_t i = 0, j = 0;
+  size_t k = left;
 
   while (i < n1 && j < n2)
     {
-      if (L[static_cast<size_t>(i)] <= R[static_cast<size_t>(j)])
+      if (L[i] <= R[j])
         {
-          _main[static_cast<size_t>(k)] = L[static_cast<size_t>(i)];
+          _main[k] = L[i];
           i++;
         }
       else
         {
-          _main[static_cast<size_t>(k)] = R[static_cast<size_t>(j)];
+          _main[k] = R[j];
           j++;
         }
       k++;
@@ -143,14 +138,14 @@ PmergeMe::merge (int left, int mid, int right)
 
   while (i < n1)
     {
-      _main[static_cast<size_t>(k)] = L[static_cast<size_t>(i)];
+      _main[k] = L[i];
       i++;
       k++;
     }
 
   while (j < n2)
     {
-      _main[static_cast<size_t>(k)] = R[static_cast<size_t>(j)];
+      _main[k] = R[j];
       j++;
       k++;
     }
@@ -161,12 +156,12 @@ PmergeMe::merge (int left, int mid, int right)
 //et passe a l element suivant
 
 void
-PmergeMe::mergeSort (int left, int right)
+PmergeMe::mergeSort (size_t left, size_t right)
 {
   if (left >= right)
     return;
 
-  int mid = left + (right - left) / 2;
+  size_t mid = left + (right - left) / 2;
   mergeSort (left, mid);
   mergeSort (mid + 1, right);
   merge (left, mid, right);
@@ -229,8 +224,7 @@ buildInsertionOrder (size_t pendCount, const std::vector<int> &jacobsthal)
 }
 
 //fonction qui porte bien son nom. elle cherche le partenaire de l element actuel
-//donc le premier element plus grand que l element actuel
-//si l element n a pas de plus grand on retourne size 
+//si l element partner
 
 static int
 findPartnerBoundVector (const std::vector<int> &chain, int partner)
@@ -269,9 +263,9 @@ PmergeMe::binarySearch (int value, int rightExclusive)
 //en suivant l ordre de jacob qu on a defini precedemment
 
 void
-PmergeMe::insertionSort ()
+PmergeMe::insertionSort () //faire attention au paire partner la on oublie et on fait une logique de recherche du premier element plus grand que l element actuel
 {
-  if (_pend.empty () && !_hasStraggler)
+  if (_pend.empty () && !_hasLoneWolf)
     return;
 
   std::vector<int> jacobsthal = generateJacobsthal (static_cast<int>(_pend.size ()));
@@ -280,38 +274,30 @@ PmergeMe::insertionSort ()
   for (size_t i = 0; i < order.size (); ++i)
     {
       size_t idx = order[i];
-      int value = _pend[idx];
-      int partner = _pendPartner[idx];
+      int value = _pend[idx].first;
+      int partner = _pend[idx].second;
       int rightExclusive = findPartnerBoundVector (_main, partner);
       int pos = binarySearch (value, rightExclusive);
       _main.insert (_main.begin () + pos, value);
     }
 
-  if (_hasStraggler)
+  if (_hasLoneWolf)
     {
-      int pos = binarySearch (_straggler, static_cast<int> (_main.size ()));
-      _main.insert (_main.begin () + pos, _straggler);
-      _hasStraggler = false;
+      int pos = binarySearch (_LoneWolf, static_cast<int> (_main.size ()));
+      _main.insert (_main.begin () + pos, _LoneWolf);
+      _hasLoneWolf = false;
     }
 }
-
-//
 
 void
 PmergeMe::sort ()
 {
-  if (_main.empty () && _pend.empty () && !_hasStraggler)
+  if (_main.empty () && _pend.empty () && !_hasLoneWolf)
     return;
 
   if (!_main.empty ())
-    mergeSort (0, static_cast<int> (_main.size ()) - 1);
+    mergeSort (0, static_cast<int> (_main.size ()) - 1);//ici passe tout au pire size_t
   insertionSort ();
-}
-
-//fonction qui permet d obtenir precisement le temps ecouler
-
-double getElapsedTime(clock_t start, clock_t end) {
-    return static_cast<double>(end - start) / CLOCKS_PER_SEC;
 }
 
 void
@@ -334,66 +320,66 @@ PmergeMe::makePairsDeque (char **av)
 {
   _deque_main.clear ();
   _deque_pend.clear ();
-  _deque_pendPartner.clear ();
-  _hasDequeStraggler = false;
+  _hasDequeLoneWolf = false;
 
   int i;
   for (i = 1; av[i] && av[i + 1]; i += 2)
     {
+      //std::pair<int, int> tmp
       int a;
       int b;
       if (!parsePositiveInt (av[i], a) || !parsePositiveInt (av[i + 1], b))
         throw PmergeError ("Error");
       if (a < b)
         {
-          _deque_pend.push_back (a);
-          _deque_pendPartner.push_back (b);
+          //a = first, b = second
+          _deque_pend.push_back (std::make_pair (a, b));
           _deque_main.push_back (b);
         }
       else
-        {
-          _deque_pend.push_back (b);
-          _deque_pendPartner.push_back (a);
+        {//a = second et b = first de la std pair
+          _deque_pend.push_back (std::make_pair (b, a));
           _deque_main.push_back (a);
         }
+        //la je pushback dans std::vector<std::pair<int, int> > vector.push_back(tmp)
     }
   if (av[i])
     {
       int unpaired;
       if (!parsePositiveInt (av[i], unpaired))
         throw PmergeError ("Error");
-      _hasDequeStraggler = true;
-      _dequeStraggler = unpaired;
+      _hasDequeLoneWolf = true;
+      _dequeLoneWolf = unpaired;
     }
 }
 
 
 void
-PmergeMe::mergeDeque (int left, int mid, int right)
+PmergeMe::mergeDeque (size_t left, size_t mid, size_t right)
 {
-  int n1 = mid - left + 1;
-  int n2 = right - mid;
+  size_t n1 = mid - left + 1;
+  size_t n2 = right - mid;
 
-  std::deque<int> L (static_cast<size_t>(n1)), R (static_cast<size_t>(n2));
+  std::deque<int> L (n1), R (n2);
 
-  for (int i = 0; i < n1; i++)
-    L[static_cast<size_t>(i)] = _deque_main[static_cast<size_t>(left + i)];
-  for (int j = 0; j < n2; j++)
-    R[static_cast<size_t>(j)] = _deque_main[static_cast<size_t>(mid + 1 + j)];
+  for (size_t i = 0; i < n1; i++)
+    L[i] = _deque_main[left + i];
+  for (size_t j = 0; j < n2; j++)
+    R[j] = _deque_main[mid + 1 + j];
 
-  int i = 0, j = 0;
-  int k = left;
+  size_t i = 0, j = 0;
+  size_t k = left;
 
   while (i < n1 && j < n2)
     {
-      if (L[static_cast<size_t>(i)] <= R[static_cast<size_t>(j)])
+      if (L[i] <= R[j])
         {
-          _deque_main[static_cast<size_t>(k)] = L[static_cast<size_t>(i)];
+          _deque_main[k] = L[i];
           i++;
         }
       else
         {
-          _deque_main[static_cast<size_t>(k)] = R[static_cast<size_t>(j)];
+          _deque_main[k] = R[j];
           j++;
         }
       k++;
@@ -401,26 +387,26 @@ PmergeMe::mergeDeque (int left, int mid, int right)
 
   while (i < n1)
     {
-      _deque_main[static_cast<size_t>(k)] = L[static_cast<size_t>(i)];
+      _deque_main[k] = L[i];
       i++;
       k++;
     }
 
   while (j < n2)
     {
-      _deque_main[static_cast<size_t>(k)] = R[static_cast<size_t>(j)];
+      _deque_main[k] = R[j];
       j++;
       k++;
     }
 }
 
 void
-PmergeMe::mergeSortDeque (int left, int right)
+PmergeMe::mergeSortDeque (size_t left, size_t right)
 {
   if (left >= right)
     return;
 
-  int mid = left + (right - left) / 2;
+  size_t mid = left + (right - left) / 2;
   mergeSortDeque (left, mid);
   mergeSortDeque (mid + 1, right);
   mergeDeque (left, mid, right);
@@ -458,7 +444,7 @@ PmergeMe::binarySearchDeque (int value, int rightExclusive)
 void
 PmergeMe::insertionSortDeque ()
 {
-  if (_deque_pend.empty () && !_hasDequeStraggler)
+  if (_deque_pend.empty () && !_hasDequeLoneWolf)
     return;
 
   std::vector<int> jacobsthal = generateJacobsthal (static_cast<int>(_deque_pend.size ()));
@@ -467,26 +453,26 @@ PmergeMe::insertionSortDeque ()
   for (size_t i = 0; i < order.size (); ++i)
     {
       size_t idx = order[i];
-      int value = _deque_pend[idx];
-      int partner = _deque_pendPartner[idx];
+      int value = _deque_pend[idx].first;
+      int partner = _deque_pend[idx].second;
       int rightExclusive = findPartnerBoundDeque (_deque_main, partner);
       int pos = binarySearchDeque (value, rightExclusive);
-      _deque_main.insert (_deque_main.begin () + pos, value);
+      _deque_main.insert (_deque_main.begin () + pos, value);//attention dans le binary insertion => il me semble qu'il faut diminuer au fur et a mesure 
     }
 
-  if (_hasDequeStraggler)
+  if (_hasDequeLoneWolf)
     {
-      int pos = binarySearchDeque (_dequeStraggler,
+      int pos = binarySearchDeque (_dequeLoneWolf,
                                    static_cast<int> (_deque_main.size ()));
-      _deque_main.insert (_deque_main.begin () + pos, _dequeStraggler);
-      _hasDequeStraggler = false;
+      _deque_main.insert (_deque_main.begin () + pos, _dequeLoneWolf);
+      _hasDequeLoneWolf = false;
     }
 }
 
 void
 PmergeMe::sortDeque ()
 {
-  if (_deque_main.empty () && _deque_pend.empty () && !_hasDequeStraggler)
+  if (_deque_main.empty () && _deque_pend.empty () && !_hasDequeLoneWolf)
     return;
 
   if (!_deque_main.empty ())

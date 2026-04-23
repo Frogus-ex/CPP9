@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 #include <iomanip>
 #include <ctime>
@@ -15,15 +16,13 @@ class PmergeMe
 {
 private:
   std::vector<int> _main;
-  std::vector<int> _pend;
-  std::vector<int> _pendPartner;
-  bool _hasStraggler;
-  int _straggler;
+  std::vector<std::pair<int, int> > _pend;
+  bool _hasLoneWolf;
+  int _LoneWolf;
   std::deque<int> _deque_main;
-  std::deque<int> _deque_pend;
-  std::deque<int> _deque_pendPartner;
-  bool _hasDequeStraggler;
-  int _dequeStraggler;
+  std::deque<std::pair<int, int> > _deque_pend;
+  bool _hasDequeLoneWolf;
+  int _dequeLoneWolf;
 
 private:
   int binarySearch (int value, int rightExclusive);
@@ -37,13 +36,13 @@ public:
   ~PmergeMe ();
   void printContent ();
   void makePairs (char **av);
-  void merge (int left, int mid, int right);
-  void mergeSort (int left, int right);
+  void merge (size_t left, size_t mid, size_t right);
+  void mergeSort (size_t left, size_t right);
   void insertionSort ();
   void sort ();
   void makePairsDeque (char **av);
-  void mergeDeque (int left, int mid, int right);
-  void mergeSortDeque (int left, int right);
+  void mergeDeque (size_t left, size_t mid, size_t right);
+  void mergeSortDeque (size_t left, size_t right);
   void insertionSortDeque ();
   void sortDeque ();
   class PmergeError : public std::exception

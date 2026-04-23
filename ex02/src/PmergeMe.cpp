@@ -141,19 +141,20 @@ PmergeMe::mergeSort (int left, int right)
 //appliquer la formule et push l element puis on avance au next element pour le set selon la formule
 //et on s arrete quand le dernier element de la suite est <= a la taille de pend
 
-void 
-PmergeMe::generateJacobsthalVector(int size)
+std::vector<int>
+PmergeMe::generateJacobsthal(int size)
 {
+  std::vector<int> result;
+  if (size <= 0)
+    return (result);
   int previous = 0, current = 1, next = 0;
-  std::vector<int> result, insertion;
-
   while (current <= size) {
-    next = current + (2 * (previous));
-    if (next <= size)
-      result.push_back(next);
+    result.push_back(current);
+    next = current + (2 * previous);
     previous = current;
     current = next;
-  }
+  }  
+  return (result);
 }
 
 //on utilise notre suite de jacob pour cree le reel ordre d insertion de notre pend

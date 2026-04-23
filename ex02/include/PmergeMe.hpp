@@ -42,7 +42,6 @@ public:
   void mergeSortDeque (int left, int right);
   void insertionSortDeque ();
   void sortDeque ();
-  void generateJacobsthalVector(int size);
   class PmergeError : public std::exception
   {
   private:

@@ -31,6 +31,10 @@ private:
   std::vector<int> generateJacobsthal (int size);
 
 public:
+  PmergeMe ();
+  PmergeMe (const PmergeMe &other);
+  PmergeMe &operator= (const PmergeMe &other);
+  ~PmergeMe ();
   void printContent ();
   void makePairs (char **av);
   void merge (int left, int mid, int right);

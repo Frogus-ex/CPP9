@@ -3,6 +3,40 @@
 #include <climits>
 #include <cstdlib>
 
+PmergeMe::PmergeMe ()
+  : _hasStraggler (false), _straggler (0), _hasDequeStraggler (false),
+    _dequeStraggler (0)
+{
+}
+
+PmergeMe::PmergeMe (const PmergeMe &other)
+{
+  *this = other;
+}
+
+PmergeMe &
+PmergeMe::operator= (const PmergeMe &other)
+{
+  if (this != &other)
+    {
+      _main = other._main;
+      _pend = other._pend;
+      _pendPartner = other._pendPartner;
+      _hasStraggler = other._hasStraggler;
+      _straggler = other._straggler;
+      _deque_main = other._deque_main;
+      _deque_pend = other._deque_pend;
+      _deque_pendPartner = other._deque_pendPartner;
+      _hasDequeStraggler = other._hasDequeStraggler;
+      _dequeStraggler = other._dequeStraggler;
+    }
+  return (*this);
+}
+
+PmergeMe::~PmergeMe ()
+{
+}
+
 static bool
 parsePositiveInt (const char *arg, int &value)
 {
@@ -26,6 +60,7 @@ parsePositiveInt (const char *arg, int &value)
   value = static_cast<int> (parsed);
   return (true);
 }
+
 
 //premiere etape de l exercice qui cree des paires de 2 et les pretrie une premiere fois avec le min et le max
 //pour pouvoir ensuite faire notre merge sort sur les max uniquement.

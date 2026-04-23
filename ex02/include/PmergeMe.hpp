@@ -26,9 +26,7 @@ private:
   int _dequeStraggler;
 
 private:
-  int binarySearch (int value);
   int binarySearch (int value, int rightExclusive);
-  int binarySearchDeque (int value);
   int binarySearchDeque (int value, int rightExclusive);
   std::vector<int> generateJacobsthal (int size);
 

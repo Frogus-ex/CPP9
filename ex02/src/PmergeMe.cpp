@@ -27,57 +27,6 @@ parsePositiveInt (const char *arg, int &value)
   return (true);
 }
 
-static std::vector<size_t>
-buildInsertionOrder (size_t pendCount, const std::vector<int> &jacobsthal)
-{
-  std::vector<size_t> order;
-  if (pendCount == 0)
-    return (order);
-
-  order.push_back (0);
-  if (pendCount == 1)
-    return (order);
-
-  size_t previous = 1;
-  for (size_t k = 1; k < jacobsthal.size (); ++k)
-    {
-      size_t current = static_cast<size_t> (jacobsthal[k]);
-      if (current > pendCount)
-        current = pendCount;
-      for (size_t idx = current; idx > previous; --idx)
-        order.push_back (idx - 1);
-      previous = current;
-    }
-
-  for (size_t idx = pendCount; idx > previous; --idx)
-    order.push_back (idx - 1);
-  return (order);
-}
-
-static int
-findPartnerBoundVector (const std::vector<int> &chain, int partner)
-{
-  int i = 0;
-  int size = static_cast<int> (chain.size ());
-  while (i < size && chain[static_cast<size_t> (i)] < partner)
-    ++i;
-  if (i < size && chain[static_cast<size_t> (i)] == partner)
-    return (i + 1);
-  return (size);
-}
-
-static int
-findPartnerBoundDeque (const std::deque<int> &chain, int partner)
-{
-  int i = 0;
-  int size = static_cast<int> (chain.size ());
-  while (i < size && chain[static_cast<size_t> (i)] < partner)
-    ++i;
-  if (i < size && chain[static_cast<size_t> (i)] == partner)
-    return (i + 1);
-  return (size);
-}
-
 //premiere etape de l exercice qui cree des paires de 2 et les pretrie une premiere fois avec le min et le max
 //pour pouvoir ensuite faire notre merge sort sur les max uniquement.
 //je garde pour les min leurs partenaire max pour l insertion plus tard tkt (larmes abondantes)
@@ -188,6 +137,10 @@ PmergeMe::mergeSort (int left, int right)
   merge (left, mid, right);
 }
 
+//genere la suite du jacob donc on a nos constant premier index 0 et 1 puis ensuite on vient
+//appliquer la formule et push l element puis on avance au next element pour le set selon la formule
+//et on s arrete quand le dernier element de la suite est <= a la taille de pend
+
 void 
 PmergeMe::generateJacobsthalVector(int size)
 {
@@ -203,15 +156,61 @@ PmergeMe::generateJacobsthalVector(int size)
   }
 }
 
+//on utilise notre suite de jacob pour cree le reel ordre d insertion de notre pend
+//on check d abord que notre pend ne soit pas vide ou ne contient pas qu un element
+//puis on parcours notre suite de jacob jusqu a sa fin et on vient insere du plus grand
+//au plus petit dans notre vector order qui definira le reel ordre d insertion qui suis
+//minutieusement la logique de ford
+//tant que current est superieur a previous alors current decremente pour ajouter tout les
+//les element du plus grand au plus petit. puis si il reste des elements ou reboucle sur tout
+//ceux ci pour les ajouter a l ordre toujours du plus grand ou plus petit.
+
+static std::vector<size_t>
+buildInsertionOrder (size_t pendCount, const std::vector<int> &jacobsthal)
+{
+  std::vector<size_t> order;
+  if (pendCount == 0)
+    return (order);
+
+  order.push_back (0);
+  if (pendCount == 1)
+    return (order);
+
+  size_t previous = 1;
+  for (size_t k = 1; k < jacobsthal.size (); ++k)
+    {
+      size_t current = static_cast<size_t> (jacobsthal[k]);
+      if (current > pendCount)
+        current = pendCount;
+      for (size_t idx = current; idx > previous; --idx)
+        order.push_back (idx - 1);
+      previous = current;
+    }
+
+  for (size_t idx = pendCount; idx > previous; --idx)
+    order.push_back (idx - 1);
+  return (order);
+}
+
+//fonction qui porte bien son nom. elle cherche le partenaire de l element actuel
+//donc le premier element plus grand que l element actuel
+//si l element n a pas de plus grand on retourne size 
+
+static int
+findPartnerBoundVector (const std::vector<int> &chain, int partner)
+{
+  int i = 0;
+  int size = static_cast<int> (chain.size ());
+  while (i < size && chain[static_cast<size_t> (i)] < partner)
+    ++i;
+  if (i < size && chain[static_cast<size_t> (i)] == partner)
+    return (i + 1);
+  return (size);
+}
+
 //binary search regarde l element du milieu si c est plus grand que l element a insere
 //alors il degage tout les element de droite qui seront forcement plus grand et regarde au milieu de left
 //etc
-
-int
-PmergeMe::binarySearch (int value)
-{
-  return (binarySearch (value, static_cast<int> (_main.size ())));
-}
 
 int
 PmergeMe::binarySearch (int value, int rightExclusive)
@@ -230,30 +229,8 @@ PmergeMe::binarySearch (int value, int rightExclusive)
   return (left);
 }
 
-std::vector<int>
-PmergeMe::generateJacobsthal (int size)
-{
-  std::vector<int> result;
-  if (size <= 0)
-    return (result);
-  
-  int j0 = 0, j1 = 1;
-  result.push_back (j1);
-  
-  while (j1 < size)
-    {
-      int j_next = j1 + 2 * j0;
-      if (j_next < size)
-        result.push_back (j_next);
-      j0 = j1;
-      j1 = j_next;
-    }
-  return (result);
-}
-
-//insertion sort optimise avec Jacobsthal
-//Au lieu d'inserer lineairement, on suit la sequence de Jacobsthal
-//puis on insere les elements "gaps" restants en ordre normal
+//le fameux insertion sort qui vient insere les elements dans le main
+//en suivant l ordre de jacob qu on a defini precedemment
 
 void
 PmergeMe::insertionSort ()
@@ -276,13 +253,13 @@ PmergeMe::insertionSort ()
 
   if (_hasStraggler)
     {
-      int pos = binarySearch (_straggler);
+      int pos = binarySearch (_straggler, static_cast<int> (_main.size ()));
       _main.insert (_main.begin () + pos, _straggler);
       _hasStraggler = false;
     }
 }
 
-//fonction pour appeler le fameux merge insertion sort du petit ford
+//
 
 void
 PmergeMe::sort ()
@@ -315,28 +292,45 @@ PmergeMe::printContent ()
 /*********************************************************/
 //a partir de la c est pareil ma avec utilisation de deque*
 /*********************************************************/
-int
-PmergeMe::binarySearchDeque (int value)
-{
-  return (binarySearchDeque (value, static_cast<int> (_deque_main.size ())));
-}
 
-int
-PmergeMe::binarySearchDeque (int value, int rightExclusive)
+void
+PmergeMe::makePairsDeque (char **av)
 {
-  int left = 0;
-  int right = rightExclusive;
+  _deque_main.clear ();
+  _deque_pend.clear ();
+  _deque_pendPartner.clear ();
+  _hasDequeStraggler = false;
 
-  while (left < right)
+  int i;
+  for (i = 1; av[i] && av[i + 1]; i += 2)
     {
-      int mid = left + (right - left) / 2;
-      if (_deque_main[static_cast<size_t>(mid)] < value)
-        left = mid + 1;
+      int a;
+      int b;
+      if (!parsePositiveInt (av[i], a) || !parsePositiveInt (av[i + 1], b))
+        throw PmergeError ("Error");
+      if (a < b)
+        {
+          _deque_pend.push_back (a);
+          _deque_pendPartner.push_back (b);
+          _deque_main.push_back (b);
+        }
       else
-        right = mid;
+        {
+          _deque_pend.push_back (b);
+          _deque_pendPartner.push_back (a);
+          _deque_main.push_back (a);
+        }
     }
-  return (left);
+  if (av[i])
+    {
+      int unpaired;
+      if (!parsePositiveInt (av[i], unpaired))
+        throw PmergeError ("Error");
+      _hasDequeStraggler = true;
+      _dequeStraggler = unpaired;
+    }
 }
+
 
 void
 PmergeMe::mergeDeque (int left, int mid, int right)
@@ -396,6 +390,35 @@ PmergeMe::mergeSortDeque (int left, int right)
   mergeDeque (left, mid, right);
 }
 
+static int
+findPartnerBoundDeque (const std::deque<int> &chain, int partner)
+{
+  int i = 0;
+  int size = static_cast<int> (chain.size ());
+  while (i < size && chain[static_cast<size_t> (i)] < partner)
+    ++i;
+  if (i < size && chain[static_cast<size_t> (i)] == partner)
+    return (i + 1);
+  return (size);
+}
+
+int
+PmergeMe::binarySearchDeque (int value, int rightExclusive)
+{
+  int left = 0;
+  int right = rightExclusive;
+
+  while (left < right)
+    {
+      int mid = left + (right - left) / 2;
+      if (_deque_main[static_cast<size_t>(mid)] < value)
+        left = mid + 1;
+      else
+        right = mid;
+    }
+  return (left);
+}
+
 void
 PmergeMe::insertionSortDeque ()
 {
@@ -417,47 +440,10 @@ PmergeMe::insertionSortDeque ()
 
   if (_hasDequeStraggler)
     {
-      int pos = binarySearchDeque (_dequeStraggler);
+      int pos = binarySearchDeque (_dequeStraggler,
+                                   static_cast<int> (_deque_main.size ()));
       _deque_main.insert (_deque_main.begin () + pos, _dequeStraggler);
       _hasDequeStraggler = false;
-    }
-}
-
-void
-PmergeMe::makePairsDeque (char **av)
-{
-  _deque_main.clear ();
-  _deque_pend.clear ();
-  _deque_pendPartner.clear ();
-  _hasDequeStraggler = false;
-
-  int i;
-  for (i = 1; av[i] && av[i + 1]; i += 2)
-    {
-      int a;
-      int b;
-      if (!parsePositiveInt (av[i], a) || !parsePositiveInt (av[i + 1], b))
-        throw PmergeError ("Error");
-      if (a < b)
-        {
-          _deque_pend.push_back (a);
-          _deque_pendPartner.push_back (b);
-          _deque_main.push_back (b);
-        }
-      else
-        {
-          _deque_pend.push_back (b);
-          _deque_pendPartner.push_back (a);
-          _deque_main.push_back (a);
-        }
-    }
-  if (av[i])
-    {
-      int unpaired;
-      if (!parsePositiveInt (av[i], unpaired))
-        throw PmergeError ("Error");
-      _hasDequeStraggler = true;
-      _dequeStraggler = unpaired;
     }
 }
 

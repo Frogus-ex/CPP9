@@ -175,11 +175,16 @@ PmergeMe::generateJacobsthal (int size)
   std::vector<int> result;
   if (size <= 0)
     return (result);
-  int previous = 0, current = 1, next = 0;
+  result.push_back (1);
+  if (size == 1)
+    return (result);
+
+  int previous = 1;
+  int current = 3;
   while (current <= size)
     {
       result.push_back (current);
-      next = current + (2 * previous);
+      int next = current + (2 * previous);
       previous = current;
       current = next;
     }

@@ -24,7 +24,6 @@ Bitcoin::validValue (const std::string &value)
       std::cerr << "Error: bad input => " << value << std::endl;
       return (false);
     }
-
   bool hasDigit = false;
   bool hasDot = false;
   for (size_t i = 0; i < value.length (); i++)
@@ -86,12 +85,6 @@ Bitcoin::validDate (const std::string &date)
   int year = std::atoi (date.substr (0, 4).c_str ());
   int month = std::atoi (date.substr (5, 2).c_str ());
   int day = std::atoi (date.substr (8, 2).c_str ());
-  if (year > 2026 || year < 0)
-    {
-      std::cerr << "Error: this year will exist in the future but is not "
-                   "relevant for now\n";
-      return (false);
-    }
   if (month > 12 || month < 1)
     {
       std::cerr << "Error: this month doesn t exist\n";
@@ -158,14 +151,15 @@ Bitcoin::calculateBitcoinValue (const char *filename)
           firstLine = false;
           continue;
         }
-      if (line.find ("|") == line.npos)
+      size_t pipePos = line.find ("|");
+      if (pipePos == line.npos)
         {
           std::cerr << "Error: bad input => " << line << std::endl;
           continue;
         }
       // setup des element date et value
-      date = line.substr (0, line.find ("|") - 1);
-      value = line.substr (line.find ("|") + 1);
+      date = line.substr (0, pipePos);
+      value = line.substr (pipePos + 1);
       // trim de date
       size_t start = date.find_first_not_of (" \t");
       size_t end = date.find_last_not_of (" \t");
@@ -219,6 +213,7 @@ Bitcoin::printContent ()
 void
 Bitcoin::run (const char *databaseFile, const char *inputFile)
 {
+  
   this->addToCont (databaseFile);
   this->calculateBitcoinValue (inputFile);
 }

@@ -7,7 +7,7 @@ RPN::rpnCalculation (std::string av)
   _rpnList.clear ();
   int topElement;
   int backElement;
-  long overflow;
+  long result;
   std::istringstream iss (av);
   std::string token;
 
@@ -24,10 +24,10 @@ RPN::rpnCalculation (std::string av)
           _rpnList.pop_back ();
           backElement = _rpnList.back ();
           _rpnList.pop_back ();
-          overflow = static_cast<long>(backElement) + static_cast<long>(topElement);
-          if (overflow < -2147483648 || overflow > 2147483647)
+          result = static_cast<long>(backElement) + static_cast<long>(topElement);
+          if (result < -2147483648 || result > 2147483647)
             throw rpnError ("Error : overflow");
-          _rpnList.push_back (backElement + topElement);
+          _rpnList.push_back (static_cast<int> (result));
         }
       else if (c == '-' && _rpnList.size () >= 2)
         {
@@ -35,10 +35,10 @@ RPN::rpnCalculation (std::string av)
           _rpnList.pop_back ();
           backElement = _rpnList.back ();
           _rpnList.pop_back ();
-          overflow = static_cast<long>(backElement) - static_cast<long>(topElement);
-          if (overflow < -2147483648 || overflow > 2147483647)
+          result = static_cast<long>(backElement) - static_cast<long>(topElement);
+          if (result < -2147483648 || result > 2147483647)
             throw rpnError ("Error : overflow");
-          _rpnList.push_back (backElement - topElement);
+          _rpnList.push_back (static_cast<int> (result));
         }
       else if (c == '*' && _rpnList.size () >= 2)
         {
@@ -46,10 +46,10 @@ RPN::rpnCalculation (std::string av)
           _rpnList.pop_back ();
           backElement = _rpnList.back ();
           _rpnList.pop_back ();
-          overflow = static_cast<long>(backElement) * static_cast<long>(topElement);
-          if (overflow < -2147483648 || overflow > 2147483647)
+          result = static_cast<long>(backElement) * static_cast<long>(topElement);
+          if (result < -2147483648 || result > 2147483647)
             throw rpnError ("Error : overflow");
-          _rpnList.push_back (backElement * topElement);
+          _rpnList.push_back (static_cast<int> (result));
         }
       else if (c == '/' && _rpnList.size () >= 2)
         {
@@ -59,10 +59,10 @@ RPN::rpnCalculation (std::string av)
             throw rpnError ("Error: it is impossible to divide by 0");
           backElement = _rpnList.back ();
           _rpnList.pop_back ();
-          overflow = static_cast<long>(backElement) / static_cast<long>(topElement);
-          if (overflow < -2147483648 || overflow > 2147483647)
+          result = static_cast<long>(backElement) / static_cast<long>(topElement);
+          if (result < -2147483648 || result > 2147483647)
             throw rpnError ("Error : overflow");
-          _rpnList.push_back (backElement / topElement);
+          _rpnList.push_back (static_cast<int> (result));
         }
       else
         throw rpnError ("Error : arg is not valid");

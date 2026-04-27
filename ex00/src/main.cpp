@@ -3,7 +3,7 @@
 int
 main (int ac, char **av)
 {
-  if (ac != 3)
+  if (ac != 2)
     {
       std::cerr << "Error: could not open file." << std::endl;
       return (1);
@@ -11,7 +11,7 @@ main (int ac, char **av)
   try
     {
       Bitcoin btc;
-      btc.run (av[1], av[2]);
+      btc.run ("data.csv", av[1]);
     }
   catch (std::exception &e)
     {

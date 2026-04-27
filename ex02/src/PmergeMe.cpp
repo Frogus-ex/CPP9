@@ -297,7 +297,7 @@ PmergeMe::sort ()
     return;
 
   if (!_main.empty ())
-    mergeSort (0, static_cast<int> (_main.size ()) - 1);
+    mergeSort (0, static_cast<size_t> (_main.size ()) - 1);
   insertionSort ();
 }
 
@@ -475,6 +475,6 @@ PmergeMe::sortDeque ()
     return;
 
   if (!_deque_main.empty ())
-    mergeSortDeque (0, static_cast<int> (_deque_main.size ()) - 1);
+    mergeSortDeque (0, static_cast<size_t> (_deque_main.size ()) - 1);
   insertionSortDeque ();
 }

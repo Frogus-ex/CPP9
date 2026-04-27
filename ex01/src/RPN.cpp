@@ -1,16 +1,24 @@
 #include "RPN.hpp"
+#include <sstream>
 
 void
 RPN::rpnCalculation (std::string av)
 {
+  _rpnList.clear ();
   int topElement;
   int backElement;
   long overflow;
-  for (size_t i = 0; i < av.size () && av.size () > 1; i++)
+  std::istringstream iss (av);
+  std::string token;
+
+  while (iss >> token)
     {
-      if (av[i] >= '0' && av[i] <= '9')
-        _rpnList.push_back (av[i] - '0');
-      else if (av[i] == '+' && _rpnList.size () >= 2)
+      if (token.size () != 1)
+        throw rpnError ("Error : arg is not valid");
+      char c = token[0];
+      if (c >= '0' && c <= '9')
+        _rpnList.push_back (c - '0');
+      else if (c == '+' && _rpnList.size () >= 2)
         {
           topElement = _rpnList.back ();
           _rpnList.pop_back ();
@@ -21,7 +29,7 @@ RPN::rpnCalculation (std::string av)
             throw rpnError ("Error : overflow");
           _rpnList.push_back (backElement + topElement);
         }
-      else if (av[i] == '-' && _rpnList.size () >= 2)
+      else if (c == '-' && _rpnList.size () >= 2)
         {
           topElement = _rpnList.back ();
           _rpnList.pop_back ();
@@ -32,7 +40,7 @@ RPN::rpnCalculation (std::string av)
             throw rpnError ("Error : overflow");
           _rpnList.push_back (backElement - topElement);
         }
-      else if (av[i] == '*' && _rpnList.size () >= 2)
+      else if (c == '*' && _rpnList.size () >= 2)
         {
           topElement = _rpnList.back ();
           _rpnList.pop_back ();
@@ -43,7 +51,7 @@ RPN::rpnCalculation (std::string av)
             throw rpnError ("Error : overflow");
           _rpnList.push_back (backElement * topElement);
         }
-      else if (av[i] == '/' && _rpnList.size () >= 2)
+      else if (c == '/' && _rpnList.size () >= 2)
         {
           topElement = _rpnList.back ();
           _rpnList.pop_back ();
@@ -56,8 +64,6 @@ RPN::rpnCalculation (std::string av)
             throw rpnError ("Error : overflow");
           _rpnList.push_back (backElement / topElement);
         }
-      else if (av[i] == 32)
-        continue;
       else
         throw rpnError ("Error : arg is not valid");
     }

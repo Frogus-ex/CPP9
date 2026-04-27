@@ -3,9 +3,10 @@
 int
 main (int ac, char **av)
 {
+  (void)av;
   if (ac < 2)
     {
-      std::cerr << "Usage: " << av[0] << " <positive integers>" << std::endl;
+      std::cerr << "Error" << std::endl;
       return (1);
     }
 
@@ -15,11 +16,9 @@ main (int ac, char **av)
 
       // VECTOR SORT
       gettimeofday (&start_vector, 0);
-
       PmergeMe sorter;
       sorter.makePairs (av);
       sorter.sort ();
-
       gettimeofday (&end_vector, 0);
 
       // DEQUE SORT

@@ -26,11 +26,21 @@ Bitcoin::validValue (const std::string &value)
     }
 
   bool hasDigit = false;
+  bool hasDot = false;
   for (size_t i = 0; i < value.length (); i++)
     {
       if (std::isdigit (static_cast<unsigned char> (value[i])))
         hasDigit = true;
-      else if (value[i] != '.')
+      else if (value[i] == '.')
+        {
+          if (hasDot)
+            {
+              std::cerr << "Error: bad input => " << value << std::endl;
+              return (false);
+            }
+          hasDot = true;
+        }
+      else
         {
           std::cerr << "Error: bad input => " << value << std::endl;
           return (false);
